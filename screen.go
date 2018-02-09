@@ -63,6 +63,18 @@ func (attr *ScreenAttr) toC() *C.struct_tsm_screen_attr {
 
 type ScreenDrawFunc func(id uint32, s string, width, posx, posy uint, attr *ScreenAttr, age uint32) bool
 
+//export screenDraw
+func screenDraw(s *C.struct_tsm_screen, id C.uint32_t, ch *C.uint32_t, len C.size_t, width, posx, posy C.uint, cattr *C.struct_tsm_screen_attr, age C.tsm_age_t, data unsafe.Pointer) C.int {
+	f := *(*ScreenDrawFunc)(data)
+	str := C.GoStringN((*C.char)(unsafe.Pointer(ch)), C.int(len))
+	attr := screenAttrFromC(cattr)
+	ok := f(uint32(id), str, uint(width), uint(posx), uint(posy), attr, uint32(age))
+	if !ok {
+		return 1
+	}
+	return 0
+}
+
 type Screen struct {
 	s *C.struct_tsm_screen
 }
@@ -285,18 +297,6 @@ func (s *Screen) SelectionCopy() string {
 		panic("tsm: failed to copy screen selection")
 	}
 	return C.GoStringN(sel, n)
-}
-
-//export screenDraw
-func screenDraw(s *C.struct_tsm_screen, id C.uint32_t, ch *C.uint32_t, len C.size_t, width, posx, posy C.uint, cattr *C.struct_tsm_screen_attr, age C.tsm_age_t, data unsafe.Pointer) C.int {
-	f := *(*ScreenDrawFunc)(data)
-	str := C.GoStringN((*C.char)(unsafe.Pointer(ch)), C.int(len))
-	attr := screenAttrFromC(cattr)
-	ok := f(uint32(id), str, uint(width), uint(posx), uint(posy), attr, uint32(age))
-	if !ok {
-		return 1
-	}
-	return 0
 }
 
 func (s *Screen) Draw(f ScreenDrawFunc) uint32 {
