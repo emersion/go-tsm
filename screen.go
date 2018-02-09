@@ -75,6 +75,18 @@ func screenDraw(s *C.struct_tsm_screen, id C.uint32_t, ch *C.uint32_t, len C.siz
 	return 0
 }
 
+type ScreenFlags uint
+
+const (
+	ScreenInsertMode ScreenFlags = 1 << iota
+	ScreenAutoWrap
+	ScreenRelOrigin
+	ScreenInverse
+	ScreenHideCursor
+	ScreenFixedPos
+	ScreenAlternate
+)
+
 type Screen struct {
 	s *C.struct_tsm_screen
 }
@@ -146,16 +158,16 @@ func (s *Screen) Reset() {
 	C.tsm_screen_reset(s.s)
 }
 
-func (s *Screen) SetFlags(flags uint) {
+func (s *Screen) SetFlags(flags ScreenFlags) {
 	C.tsm_screen_set_flags(s.s, C.uint(flags))
 }
 
-func (s *Screen) ResetFlags(flags uint) {
+func (s *Screen) ResetFlags(flags ScreenFlags) {
 	C.tsm_screen_reset_flags(s.s, C.uint(flags))
 }
 
-func (s *Screen) Flags() uint {
-	return uint(C.tsm_screen_get_flags(s.s))
+func (s *Screen) Flags() ScreenFlags {
+	return ScreenFlags(C.tsm_screen_get_flags(s.s))
 }
 
 func (s *Screen) CursorX() uint {
