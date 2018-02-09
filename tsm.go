@@ -1,12 +1,30 @@
 package tsm
 
-// #cgo pkg-config: libtsm
-// #include <libtsm.h>
+/*
+#cgo pkg-config: libtsm
+
+#include <libtsm.h>
+
+void set_screen_attr_bitfield(struct tsm_screen_attr *attr, bool bold,
+		bool underline, bool inverse, bool protect, bool blink) {
+	attr->bold = bold;
+	attr->underline = underline;
+	attr->inverse = inverse;
+	attr->protect = protect;
+	attr->blink = blink;
+}
+*/
 import "C"
 
 import (
 	"runtime"
 )
+
+type ScreenAttr struct {
+	FCCode, BCCode int8 // foreground, background color codes (<0 for rgb)
+	FR, FG, FB, BR, BG, BB uint8 // foreground/background red/green/blue
+	Bold, Underline, Inverse, Protect, Blink bool
+}
 
 type Screen struct {
 	s *C.struct_tsm_screen
@@ -69,4 +87,36 @@ func (s *Screen) ScrollbackPageDown(num uint) {
 
 func (s *Screen) ScrollbackReset() {
 	C.tsm_screen_sb_reset(s.s)
+}
+
+func (s *Screen) SetDefAttr(attr *ScreenAttr) {
+	cattr := C.struct_tsm_screen_attr{
+		fccode: C.int8_t(attr.FCCode),
+		bccode: C.int8_t(attr.BCCode),
+		fr: C.uint8_t(attr.FR),
+		fg: C.uint8_t(attr.FG),
+		fb: C.uint8_t(attr.FB),
+		br: C.uint8_t(attr.BR),
+		bg: C.uint8_t(attr.BG),
+		bb: C.uint8_t(attr.BB),
+	}
+	C.set_screen_attr_bitfield(&cattr, C.bool(attr.Bold), C.bool(attr.Underline), C.bool(attr.Inverse), C.bool(attr.Protect), C.bool(attr.Blink))
+
+	C.tsm_screen_set_def_attr(s.s, &cattr)
+}
+
+func (s *Screen) Reset() {
+	C.tsm_screen_reset(s.s)
+}
+
+func (s *Screen) SetFlags(flags uint) {
+	C.tsm_screen_set_flags(s.s, C.uint(flags))
+}
+
+func (s *Screen) ResetFlags(flags uint) {
+	C.tsm_screen_reset_flags(s.s, C.uint(flags))
+}
+
+func (s *Screen) Flags() uint {
+	return uint(C.tsm_screen_get_flags(s.s))
 }
