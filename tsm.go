@@ -50,3 +50,23 @@ func (s *Screen) SetMaxScrollback(max uint) {
 func (s *Screen) ClearScrollback() {
 	C.tsm_screen_clear_sb(s.s)
 }
+
+func (s *Screen) ScrollbackUp(num uint) {
+	C.tsm_screen_sb_up(s.s, C.uint(num))
+}
+
+func (s *Screen) ScrollbackDown(num uint) {
+	C.tsm_screen_sb_down(s.s, C.uint(num))
+}
+
+func (s *Screen) ScrollbackPageUp(num uint) {
+	C.tsm_screen_sb_page_up(s.s, C.uint(num))
+}
+
+func (s *Screen) ScrollbackPageDown(num uint) {
+	C.tsm_screen_sb_page_down(s.s, C.uint(num))
+}
+
+func (s *Screen) ScrollbackReset() {
+	C.tsm_screen_sb_reset(s.s)
+}
