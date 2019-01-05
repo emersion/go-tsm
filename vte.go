@@ -44,7 +44,7 @@ func NewVTE(s *Screen, f VTEWriteFunc) *VTE {
 	if ret != 0 {
 		panic("tsm: failed to create VTE")
 	}
-	runtime.SetFinalizer(s, func(vte *VTE) {
+	runtime.SetFinalizer(vte, func(vte *VTE) {
 		C.tsm_vte_unref(vte.vte)
 	})
 	return vte
